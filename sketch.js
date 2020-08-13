@@ -1,6 +1,6 @@
 var bird;
 function setup() {
-  createCanvas(400, 400);
+  createCanvas(400, 500);
   bird = new Bird();
 }
 
@@ -12,6 +12,6 @@ function draw() {
 
 function keyPressed() {
   if(key == ' ') {
-   console.log("SPACE"); 
+   bird.up();
   }
 }
