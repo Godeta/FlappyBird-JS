@@ -1,12 +1,14 @@
-function Bird() {
+class Bird {
+  constructor() {
+    this.y = height / 2;
+    this.x = 25;
+    this.gravity = 0.6;
+    this.lift = -15;
+    this.velocity = 0;
+    this.balls = [];
+  }
 
-  this.y = height / 2;
-  this.x = 25;
-  this.gravity = 0.6;
-  this.velocity = 0;
-  this.lift = -15;
-
-  this.show = function() {
+  show = function() {
     push();
     translate(this.x, this.y);
     
@@ -33,7 +35,7 @@ function Bird() {
     pop();
   }
 
-  this.update = function() {
+  update = function() {
     this.velocity += this.gravity;
     this.velocity *= 0.9;
     this.y += this.velocity;
@@ -46,8 +48,27 @@ function Bird() {
     }
   }
 
-  this.up = function() {
+  up = function() {
     this.velocity += this.lift;
     console.log("SPACE");
+  }
+
+  throwBall() {
+    this.balls.push(new Ball(this.x, this.y));
+  }
+
+  updateBalls() {
+    for (let i = this.balls.length - 1; i >= 0; i--) {
+      this.balls[i].update();
+      if (this.balls[i].offscreen()) {
+        this.balls.splice(i, 1);
+      }
+    }
+  }
+
+  showBalls() {
+    for (let ball of this.balls) {
+      ball.show();
+    }
   }
 }

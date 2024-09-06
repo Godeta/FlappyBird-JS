@@ -5,6 +5,7 @@ var score = 0;
 var gameOver = false;
 var scorePopups = [];
 var deathCause = '';
+var difficultyFactor = 1;
 
 function setup() {
   createCanvas(400, 500);
@@ -35,11 +36,40 @@ function draw() {
   fill(76, 175, 80);
   rect(0, height - 20, width, 20);
 
-  bird.update();
-  bird.show();
   
-  if (frameCount %100 ==0) {
-    pipes.push(new Pipe() );
+  // Display score
+  textSize(32);
+  textAlign(CENTER);
+  
+  // Text shadow
+  fill(0, 0, 0, 100);
+  text('Score: ' + score, width / 2 + 2, 52);
+  
+  // Main text
+  fill(255);
+  stroke(0);
+  strokeWeight(4);
+  text('Score: ' + score, width / 2, 50);
+  noStroke();
+
+  if (!gameOver) {
+    // ... existing game code ...
+    
+  bird.update();
+  bird.updateBalls();
+  bird.show();
+  bird.showBalls();
+  
+  if (frameCount % 100 == 0) {
+    pipes.push(new Pipe());
+  }
+
+  // Update difficulty factor based on score
+  difficultyFactor = 1 + (score / 10) * 0.5; // Increase by 0.5 for every 10 points
+  
+  // Spawn enemies more frequently as score increases
+  if (frameCount % Math.floor(60 / difficultyFactor) == 0) {
+    spawnEnemy();
   }
   
   for (var i=pipes.length-1; i>=0; i--) {
@@ -77,6 +107,19 @@ function draw() {
     if (enemies[i].offscreen()) {
       enemies.splice(i, 1);
     }
+    else {
+    // Check for ball collisions
+    for (let j = bird.balls.length - 1; j >= 0; j--) {
+      if (bird.balls[j].hits(enemies[i])) {
+        enemies.splice(i, 1);
+        bird.balls.splice(j, 1);
+        score += 2; // Bonus points for killing an enemy
+        break;
+      }
+    }
+  }
+
+    
   }
   
   // Update and display score popups
@@ -87,24 +130,6 @@ function draw() {
       scorePopups.splice(i, 1);
     }
   }
-  
-  // Display score
-  textSize(32);
-  textAlign(CENTER);
-  
-  // Text shadow
-  fill(0, 0, 0, 100);
-  text('Score: ' + score, width / 2 + 2, 52);
-  
-  // Main text
-  fill(255);
-  stroke(0);
-  strokeWeight(4);
-  text('Score: ' + score, width / 2, 50);
-  noStroke();
-
-  if (!gameOver) {
-    // ... existing game code ...
   } else {
     // Game over screen
     background(0, 0, 0, 200);
@@ -122,6 +147,17 @@ function draw() {
   }
 }
 
+function spawnEnemy() {
+  let spawnChance = 0.3 + (score / 20) * 0.1; // Increase spawn chance as score increases
+  spawnChance = min(spawnChance, 0.8); // Cap spawn chance at 80%
+  
+  if (random(1) < spawnChance) {
+    let enemyY = random(height * 0.2, height * 0.8); // Spawn within middle 60% of screen height
+    let enemySpeed = 3 + (score / 30); // Increase enemy speed as score increases
+    enemies.push(new Enemy(width, enemyY, enemySpeed));
+  }
+}
+
 function keyPressed() {
   if (key == ' ') {
     if (gameOver) {
@@ -132,8 +168,14 @@ function keyPressed() {
       score = 0;
       gameOver = false;
       deathCause = '';
+      difficultyFactor = 1;
     } else {
       bird.up();
+    }
+  }
+  else if (key == 'v' || key == 'V') {
+    if (!gameOver) {
+      bird.throwBall();
     }
   }
 }
