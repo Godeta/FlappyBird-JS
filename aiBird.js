@@ -2,8 +2,11 @@ class AIBird extends Bird {
   constructor() {
     super(true); // Pass true to indicate it's an AI bird
     this.aiBird = true;
-    this.reactionDistance = 150 * aiDifficulty;
-    this.attackChance = 0.3 * aiDifficulty;
+    this.reactionDistance = 250 * aiDifficulty;
+    this.attackChance = 0.5 * aiDifficulty;
+    this.color = color(139, 69, 19);
+    this.lastJumpFrame = 0;
+    this.lastBallThrowFrame = 0;
   }
 
   update1(pipes, enemies) {
@@ -25,34 +28,69 @@ class AIBird extends Bird {
 
   easyBehavior(pipes, enemies) {
     let closestPipe = this.getClosestPipe(pipes);
+    let nextPipe = this.getNextPipe(pipes, closestPipe);
     
     if (closestPipe) {
-      let gapCenter = closestPipe.top + closestPipe.spacing / 2;
-      let distanceToGap = gapCenter - this.y;
-      
-      // Jump if the bird is below the center of the gap and not too close to the top pipe
-      if (distanceToGap < -30 && this.y < height - 100 ) {
+      this.avoidPipe(closestPipe, nextPipe);
+    }
+    
+    // this.avoidEnemies(enemies);
+    // this.throwBallsAtEnemies(enemies);
+  }
+
+  avoidPipe(pipe, nextPipe) {
+    let gapCenter = pipe.top + pipe.spacing / 2;
+    let distanceToGap = gapCenter - this.y;
+    let distanceToPipe = pipe.x - this.x;
+    
+    // Calculate the number of frames it will take to reach the pipe
+    let framesToPipe = distanceToPipe / pipe.speed;
+    
+    // Predict the bird's position at the pipe
+    let predictedY = this.y + this.velocity * framesToPipe + 0.5 * this.gravity * framesToPipe * framesToPipe;
+    
+    // Calculate the safe zone
+    let safeZoneTop = pipe.top + 30;
+    let safeZoneBottom = height - pipe.bottom - 30;
+    
+    // Decide whether to jump based on the predicted position
+    if (predictedY > safeZoneBottom || (predictedY > gapCenter && this.velocity > 0)) {
+      if (frameCount - this.lastJumpFrame > 15) {
         this.up();
-      }
-      
-      // Add some randomness to make it less perfect
-      if (random(1) < 0.01 && frameCount % 60 === 0) {  // 1% chance to make a random jump, but not too often
-        this.up();
+        this.lastJumpFrame = frameCount;
       }
     }
-  
-    // Random ball throwing
-    if (random(1) < 0.01) {  // 1% chance to throw a ball each frame
-      this.throwBall();
+    
+    // Prevent jumping too high
+    if (this.y < safeZoneTop && this.velocity < 0) {
+      this.velocity += this.gravity * 2;
     }
   }
 
-  mediumBehavior(pipes, enemies) {
-    // To be implemented
+    mediumBehavior(pipes) {
+    // For now, use the same behavior as easy
+    this.easyBehavior(pipes);
+    this.throwBallsAtEnemies(enemies);
   }
 
-  hardBehavior(pipes, enemies) {
-    // To be implemented
+  hardBehavior(pipes) {
+    // For now, use the same behavior as easy
+    this.easyBehavior(pipes);
+  }
+
+  throwBallsAtEnemies(enemies) {
+    for (let enemy of enemies) {
+      if (Math.abs(enemy.y - this.y) < 20) {
+        if (frameCount - this.lastBallThrowFrame > 30) { // Add a cooldown to prevent constant throwing
+          this.throwBall();
+          this.lastBallThrowFrame = frameCount;
+          break; // Only throw at one enemy at a time
+        }
+      }
+    }
+  }
+  getNextPipe(pipes, currentPipe) {
+    return pipes.find(pipe => pipe.x > currentPipe.x + currentPipe.w);
   }
 
   // Keep the existing helper methods

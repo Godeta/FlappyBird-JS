@@ -123,6 +123,7 @@ function drawAIGame() {
     updateGame();
     if (aiBird) {
       aiBird.show();
+      aiBird.showBalls();
     }
     showPipesAndEnemies();
     displayScore();
@@ -141,6 +142,7 @@ function drawDualGame() {
   }
   if (aiAlive && aiBird) {
     aiBird.show();
+    aiBird.showBalls();
   }
   showPipesAndEnemies();
   displayDualScore();
