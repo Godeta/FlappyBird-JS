@@ -3,7 +3,7 @@ class Ball {
     this.x = x;
     this.y = y;
     this.r = 8;
-    this.speed = 5;
+    this.speed = 10; // Increased speed
   }
 
   update() {
@@ -11,9 +11,11 @@ class Ball {
   }
 
   show() {
+    push(); // Save the current drawing state
     fill(255, 0, 0);
     noStroke();
     ellipse(this.x, this.y, this.r * 2);
+    pop(); // Restore the drawing state
   }
 
   hits(enemy) {
@@ -22,6 +24,6 @@ class Ball {
   }
 
   offscreen() {
-    return this.x > width;
+    return this.x > width + this.r;
   }
 }

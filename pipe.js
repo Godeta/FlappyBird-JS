@@ -21,18 +21,16 @@ function Pipe() {
       // Bottom pipe
       rect(this.x, height - this.bottom, this.w, this.bottom);
       rect(this.x - 5, height - this.bottom, this.w + 10, 20);
-      
-      this.highlight = false;
     }
+
     this.update = function() {
       this.x -= this.speed;
     }
+
     this.offscreen = function() {
-      if (this.x < -this.w) {
-        return true;
-      }
-      return false;
+      return this.x < -this.w;
     }
+
     this.hits = function(bird) {
       if (bird.y < this.top || bird.y > height - this.bottom) {
         if (bird.x > this.x && bird.x < this.x + this.w) {
@@ -42,6 +40,7 @@ function Pipe() {
       }
       return false;
     }
+
     this.pass = function(bird) {
       if (!this.passed && bird.x > this.x + this.w) {
         this.passed = true;
@@ -49,4 +48,4 @@ function Pipe() {
       }
       return false;
     }
-  }
+}
